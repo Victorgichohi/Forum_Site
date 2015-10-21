@@ -8,7 +8,9 @@ class Main(ListView):
     list_model    = Forum
     template_name = "forum/list.html"
 
-# this list serves the threads view
+# this list related view combines the detail and list views
+# this  two models are connected by a ForeignKey relationship on the ListView model
+# the related_name though needs to be specified.
 class ForumView(ListRelated):
     # passes the forum model to the parameter detail model
     detail_model  = Forum
@@ -18,7 +20,7 @@ class ForumView(ListRelated):
     # defines what its templates name is
     template_name = "forum.html"
 
-# this serves the posts view
+
 class ThreadView(ListRelated):
     # passes the thread model to the detail model parameter
     detail_model  = Thread
