@@ -80,3 +80,30 @@ class Thread(BaseModel):
 
     # this gets the total number of replies to posts for that particular thread
     def num_replies(self)      : return self.posts.count() - 1
+
+# this is the forums model which basically defines properties of the forums of the whole site
+class Forum(BaseModel):
+    # first,as usual we set the maximum length of each forums title
+    title = CharField(max_length=60)
+
+    # this gets the title of a particular user
+    def __unicode__(self):
+        return self.title
+
+
+    def get_absolute_url(self):
+        return reverse2("forum", dpk=self.pk)
+
+    # this returns the total number of posts of a particular thread
+    def num_posts(self):
+        return sum([t.num_posts() for t in self.threads.all()])
+
+    def last_post(self):
+        # Go over the list of threads and find the most recent post
+        threads = self.threads.all()
+        last    = None
+        for thread in threads:
+            lastp = thread.last_post()
+            if lastp and (not last or lastp.created > last.created):
+                last = lastp
+        return last
