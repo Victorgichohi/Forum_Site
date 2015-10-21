@@ -52,3 +52,31 @@ class Post(BaseModel):
     def profile_data(self):
         p = self.creator.profile
         return p.posts, p.avatar
+
+# this is the thread model
+class Thread(BaseModel):
+    # the title of each thread is set to a maximum length of sixty
+    title   = CharField(max_length=60)
+    # the time it was created too is also set
+    created = DateTimeField(auto_now_add=True)
+    # this gets the particular user who created it
+    creator = ForeignKey(User, blank=True, null=True)
+    # this gets all the threads that have been there
+    forum   = ForeignKey(Forum, related_name="threads")
+
+    # The Meta.ordering list is used to set the default ordering of threads to be descending by created date/time;
+    class Meta:
+        ordering = ["-created"]
+
+
+    def __unicode__(self):
+        return unicode("%s - %s" % (self.creator, self.title))
+
+    def get_absolute_url(self) : return reverse2("thread", dpk=self.pk)
+    def last_post(self)        : return first(self.posts.all())
+
+    # this method gets the total number of posts for that thread
+    def num_posts(self)        : return self.posts.count()
+
+    # this gets the total number of replies to posts for that particular thread
+    def num_replies(self)      : return self.posts.count() - 1
