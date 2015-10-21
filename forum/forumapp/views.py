@@ -17,3 +17,13 @@ class ForumView(ListRelated):
     related_name  = "threads"
     # defines what its templates name is
     template_name = "forum.html"
+
+# this serves the posts view
+class ThreadView(ListRelated):
+    # passes the thread model to the detail model parameter
+    detail_model  = Thread
+    # passes the post model to this list model parameter
+    list_model    = Post
+    related_name  = "posts"
+    # defines what the template name html is
+    template_name = "thread.html"
