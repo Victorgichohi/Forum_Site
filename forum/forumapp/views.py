@@ -50,6 +50,7 @@ class EditProfile(UpdateView):
         pk   = self.kwargs.get("mfpk")
         old  = UserProfile.obj.get(pk=pk).avatar
 
+        # this deletes an old name if it is replaced
         if old.name and old.name != name:
             old.delete()
 
@@ -60,3 +61,35 @@ class EditProfile(UpdateView):
             img.thumbnail((160,160), PImage.ANTIALIAS)
             img.save(img.filename, "JPEG")
         return redir(self.success_url)
+
+# inherit from detail and create views
+class NewTopic(DetailView, CreateView):
+    detail_model    = Forum
+    # this is post because both this view and the inherited
+    # Reply view listed below will create Post records
+    # in modelform_valid() –
+    # the main difference is that NewTopic will also create a new Thread in get_thread().
+    form_model      = Post
+    modelform_class = PostForm
+    title           = "Start New Topic"
+    template_name   = "forum/post.html"
+
+    # handle references to the current forum(url keyword arg and forum record itself as detail_object))
+    def get_thread(self, modelform):
+        title = modelform.cleaned_data.title
+        return Thread.obj.create(forum=self.get_detail_object(), title=title, creator=self.user)
+
+    def modelform_valid(self, modelform):
+        """Create new thread and its first post."""
+        data   = modelform.cleaned_data
+        thread = self.get_thread(modelform)
+
+        #create a new Thread and Post with the associated title and body based on the submitted form.
+        Post.obj.create(thread=thread, title=data.title, body=data.body, creator=self.user)
+        self.user.profile.increment_posts()
+        return redir(self.get_success_url())
+
+    # use get_detail_object() because detail_object is only created on GET request
+    # and theres need to handle both GET and POST in this view.    
+    def get_success_url(self):
+        return self.get_detail_object().get_absolute_url()
