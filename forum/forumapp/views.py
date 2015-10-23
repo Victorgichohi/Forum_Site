@@ -90,6 +90,17 @@ class NewTopic(DetailView, CreateView):
         return redir(self.get_success_url())
 
     # use get_detail_object() because detail_object is only created on GET request
-    # and theres need to handle both GET and POST in this view.    
+    # and theres need to handle both GET and POST in this view.
     def get_success_url(self):
         return self.get_detail_object().get_absolute_url()
+
+# changed detail_model to Thread to use in get_thread() and also to redirect to the last page of the thread in get_success_url().
+class Reply(NewTopic):
+    detail_model = Thread
+    title        = "Reply"
+
+    def get_thread(self, modelform):
+        return self.get_detail_object()
+
+    def get_success_url(self):
+        return self.get_detail_object().get_absolute_url() + "?page=last"
